@@ -33,6 +33,9 @@ class Address(abc.ABC):
     def __repr__(self):
         # implement repr to help during debugging
         ...
+        
+    def __str__(self):
+        return self.__repr__()
 
 
 class AbsoluteVirtualAddress(int, Address):

@@ -114,6 +114,8 @@ from capa.features.extractors.base_extractor import (
     DynamicFeatureExtractor,
 )
 
+from capa.features.sizebook import get_book
+
 RULES_PATH_DEFAULT_STRING = "(embedded rules)"
 SIGNATURES_PATH_DEFAULT_STRING = "(embedded signatures)"
 BACKEND_AUTO = "auto"
@@ -989,6 +991,7 @@ def main(argv: Optional[list[str]] = None):
         },
     )
     parser.add_argument("-j", "--json", action="store_true", help="emit JSON instead of text")
+    parser.add_argument("--write-size-to", type=str, help="write the size of the input file to a file")
     args = parser.parse_args(args=argv)
 
     try:
@@ -1057,6 +1060,11 @@ def main(argv: Optional[list[str]] = None):
     else:
         print(capa.render.default.render(meta, rules, capabilities.matches))
     colorama.deinit()
+    
+    if args.write_size_to:
+        logger.debug("Writing sizes to %s", args.write_size_to)
+        get_book().dedup()
+        get_book().write_to(args.write_size_to)
 
     logger.debug("done.")
 

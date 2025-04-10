@@ -24,6 +24,7 @@ from capa.features.address import Address, AbsoluteVirtualAddress
 from capa.features.extractors import loops
 from capa.features.extractors.elf import SymTab
 from capa.features.extractors.base_extractor import FunctionHandle
+from capa.features.sizebook import get_book
 
 
 def interface_extract_function_XXX(fh: FunctionHandle) -> Iterator[tuple[Feature, Address]]:
@@ -58,12 +59,22 @@ def extract_function_symtab_names(fh: FunctionHandle) -> Iterator[tuple[Feature,
 
                 STT_FUNC = 0x2
                 if sym_value == fh.address and sym_info & STT_FUNC != 0:
+                    get_book().add(
+                        fh.address,
+                        "function",
+                        fh.inner.vw.getFunctionMeta(fh.address, 'Size')
+                    )
                     yield FunctionName(sym_name), fh.address
 
 
 def extract_function_calls_to(fhandle: FunctionHandle) -> Iterator[tuple[Feature, Address]]:
     f: viv_utils.Function = fhandle.inner
     for src, _, _, _ in f.vw.getXrefsTo(f.va, rtype=vivisect.const.REF_CODE):
+        get_book().add(
+            AbsoluteVirtualAddress(src),
+            "function_calls_to",
+            fhandle.inner.vw.getLocation(src)[1]
+        )
         yield Characteristic("calls to"), AbsoluteVirtualAddress(src)
 
 
@@ -92,6 +103,11 @@ def extract_function_loop(fhandle: FunctionHandle) -> Iterator[tuple[Feature, Ad
                     edges.append((bb.va, bva))
 
     if edges and loops.has_loop(edges):
+        get_book().add(
+            fhandle.address,
+            "function",
+            fhandle.inner.vw.getFunctionMeta(fhandle.address, 'Size')
+        )
         yield Characteristic("loop"), fhandle.address
 
 

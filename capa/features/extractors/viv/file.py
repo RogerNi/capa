@@ -15,6 +15,7 @@
 from typing import Iterator
 
 import PE.carve as pe_carve  # vivisect PE
+from PE.carve import CarvedPE
 import vivisect
 import viv_utils
 import viv_utils.flirt
@@ -26,10 +27,17 @@ import capa.features.extractors.strings
 from capa.features.file import Export, Import, Section, FunctionName
 from capa.features.common import Feature, Characteristic
 from capa.features.address import Address, FileOffsetAddress, AbsoluteVirtualAddress
+from capa.features.sizebook import get_book
 
 
 def extract_file_embedded_pe(buf, **kwargs) -> Iterator[tuple[Feature, Address]]:
-    for offset, _ in pe_carve.carve(buf, 1):
+    for offset, i in pe_carve.carve(buf, 1):
+        size = CarvedPE(buf, offset, chr(i)).getFileSize()
+        get_book().add(
+            FileOffsetAddress(offset),
+            "embedded_pe",
+            size,
+        )
         yield Characteristic("embedded pe"), FileOffsetAddress(offset)
 
 
@@ -99,7 +107,12 @@ def is_viv_ord_impname(impname: str) -> bool:
 
 
 def extract_file_section_names(vw, **kwargs) -> Iterator[tuple[Feature, Address]]:
-    for va, _, segname, _ in vw.getSegments():
+    for va, size, segname, _ in vw.getSegments():
+        get_book().add(
+            AbsoluteVirtualAddress(va),
+            "section",
+            size,
+        )
         yield Section(segname), AbsoluteVirtualAddress(va)
 
 
@@ -115,12 +128,22 @@ def extract_file_function_names(vw, **kwargs) -> Iterator[tuple[Feature, Address
         addr = AbsoluteVirtualAddress(va)
         if viv_utils.flirt.is_library_function(vw, va):
             name = viv_utils.get_function_name(vw, va)
+            get_book().add(
+                addr,
+                "function_name",
+                len(name),
+            )
             yield FunctionName(name), addr
             if name.startswith("_"):
                 # some linkers may prefix linked routines with a `_` to avoid name collisions.
                 # extract features for both the mangled and un-mangled representations.
                 # e.g. `_fwrite` -> `fwrite`
                 # see: https://stackoverflow.com/a/2628384/87207
+                get_book().add(
+                    addr,
+                    "function_name",
+                    len(name[1:]),
+                )
                 yield FunctionName(name[1:]), addr
 
 

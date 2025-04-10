@@ -25,6 +25,7 @@ from capa.features.address import Address, AbsoluteVirtualAddress
 from capa.features.basicblock import BasicBlock
 from capa.features.extractors.helpers import MIN_STACKSTRING_LEN
 from capa.features.extractors.base_extractor import BBHandle, FunctionHandle
+from capa.features.sizebook import get_book
 
 
 def interface_extract_basic_block_XXX(f: FunctionHandle, bb: BBHandle) -> Iterator[tuple[Feature, Address]]:
@@ -163,6 +164,11 @@ def extract_features(f: FunctionHandle, bb: BBHandle) -> Iterator[tuple[Feature,
     yields:
       tuple[Feature, int]: the features and their location found in this basic block.
     """
+    get_book().add(
+        AbsoluteVirtualAddress(bb.inner.va),
+        "basic_block",
+        bb.inner.size,
+    )
     yield BasicBlock(), AbsoluteVirtualAddress(bb.inner.va)
     for bb_handler in BASIC_BLOCK_HANDLERS:
         for feature, addr in bb_handler(f, bb):

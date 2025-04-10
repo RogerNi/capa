@@ -42,6 +42,7 @@ from capa.features.common import (
 )
 from capa.features.freeze import is_freeze
 from capa.features.address import NO_ADDRESS, Address, FileOffsetAddress
+from capa.features.sizebook import get_book
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +58,19 @@ def extract_file_strings(buf: bytes, **kwargs) -> Iterator[tuple[String, Address
     extract ASCII and UTF-16 LE strings from file
     """
     for s in capa.features.extractors.strings.extract_ascii_strings(buf):
+        get_book().add(
+            FileOffsetAddress(s.offset),
+            "string",
+            len(s.s),
+        )
         yield String(s.s), FileOffsetAddress(s.offset)
 
     for s in capa.features.extractors.strings.extract_unicode_strings(buf):
+        get_book().add(
+            FileOffsetAddress(s.offset),
+            "string",
+            len(s.s),
+        )
         yield String(s.s), FileOffsetAddress(s.offset)
 
 
