@@ -28,6 +28,7 @@ from capa.features.file import Export, Import, Section, FunctionName
 from capa.features.common import Feature, Characteristic
 from capa.features.address import Address, FileOffsetAddress, AbsoluteVirtualAddress
 from capa.features.sizebook import get_book
+from capa.features.stringmap import set_text_base
 
 
 def extract_file_embedded_pe(buf, **kwargs) -> Iterator[tuple[Feature, Address]]:
@@ -162,7 +163,7 @@ def extract_features(vw, buf: bytes) -> Iterator[tuple[Feature, Address]]:
     yields:
       tuple[Feature, Address]: a feature and its location.
     """
-
+    set_text_base(buf)
     for file_handler in FILE_HANDLERS:
         for feature, addr in file_handler(vw=vw, buf=buf):  # type: ignore
             yield feature, addr

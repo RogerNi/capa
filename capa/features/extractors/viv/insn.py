@@ -33,6 +33,7 @@ from capa.features.extractors.elf import SymTab
 from capa.features.extractors.base_extractor import BBHandle, InsnHandle, FunctionHandle
 from capa.features.extractors.viv.indirect_calls import NotFoundError, resolve_indirect_call
 from capa.features.sizebook import get_book
+from capa.features.stringmap import get_string_map
 
 # security cookie checks may perform non-zeroing XORs, these are expected within a certain
 # byte range within the first and returning basic blocks, this helps to reduce FP features
@@ -710,6 +711,12 @@ def extract_op_string_features(
             continue
         else:
             if len(s) >= 4:
+                get_string_map().add(
+                    ih.address,
+                    AbsoluteVirtualAddress(vv),
+                    s,
+                    f.vw
+                )
                 yield String(s), ih.address
 
 

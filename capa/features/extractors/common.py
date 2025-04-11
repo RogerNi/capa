@@ -60,7 +60,7 @@ def extract_file_strings(buf: bytes, **kwargs) -> Iterator[tuple[String, Address
     for s in capa.features.extractors.strings.extract_ascii_strings(buf):
         get_book().add(
             FileOffsetAddress(s.offset),
-            "string",
+            f"string:{s.s}",
             len(s.s),
         )
         yield String(s.s), FileOffsetAddress(s.offset)
@@ -68,7 +68,7 @@ def extract_file_strings(buf: bytes, **kwargs) -> Iterator[tuple[String, Address
     for s in capa.features.extractors.strings.extract_unicode_strings(buf):
         get_book().add(
             FileOffsetAddress(s.offset),
-            "string",
+            f"string:{s.s}",
             len(s.s),
         )
         yield String(s.s), FileOffsetAddress(s.offset)
