@@ -49,6 +49,8 @@ class JsonWithSize:
                 if len(row) == 3:
                     key_raw, feature_type, size_str = row
                     size = int(size_str)
+                    if "string:" in feature_type:
+                        feature_type = "string"
 
                     if key_raw.startswith("file("):
                         key_type = "file"
@@ -95,17 +97,48 @@ class JsonWithSize:
             for entry in entries:
                 addr_info_list = entry[0]
                 scope = entry[3]
+                new_addr_info_list = []
                 for addr_info in addr_info_list:
-                    new_entries.append((addr_info.model_dump(), entry[1], entry[2], entry[3]))
+                    new_addr_info_list.append(addr_info.model_dump())
+                new_entries.append((new_addr_info_list, entry[1], entry[2], entry[3]))
+                for i, addr_info in enumerate(addr_info_list):
                     if addr_info.type == "absolute":
                         addr = addr_info.value
-                        new_entries[-1][0]["size"] = self.size_book.get(("absolute", addr, scope), None)
+                        new_entries[-1][0][i]["size"] = self.size_book.get(("absolute", addr, scope), None)
+            new_self_data[key] = new_entries
+        self.data = new_self_data
+        
+    def dereference_all_string(self):
+        if self.string_map is None:
+            raise ValueError("String map not loaded. Please load string map first.")
+        new_self_data = {}
+        for key, entries in self.data.items():
+            new_entries = []
+            for entry in entries:
+                addr_info_list = entry[0]
+                scope = entry[3]
+                new_addr_info_list = []
+                for addr_info in addr_info_list:
+                    new_addr_info_list.append(addr_info)
+                new_entries.append((new_addr_info_list, entry[1], entry[2], entry[3]))
+                if "string" in entry[1]:
+                    for i, addr_info in enumerate(addr_info_list):
+                        if addr_info["type"] == "absolute":
+                            addr = addr_info["value"]
+                            if addr in self.string_map:
+                                str_virtual_addr = self.string_map[addr][0]
+                                str_file_offset_addr = self.string_map[addr][1]
+                                new_entries[-1][0][i]["str_virt_addr"] = str_virtual_addr
+                                new_entries[-1][0][i]["str_file_offset_addr"] = str_file_offset_addr
+                                str_size = self.size_book.get(("file", str_file_offset_addr, "string"), None)
+                                new_entries[-1][0][i]["str_size"] = str_size
             new_self_data[key] = new_entries
         self.data = new_self_data
         
         
     def write_to(self, file_path):
         self.find_all_sizes()
+        self.dereference_all_string()
         def convert_keys_to_str(obj):
             if isinstance(obj, dict):
                 return {str(k): convert_keys_to_str(v) for k, v in obj.items()}
