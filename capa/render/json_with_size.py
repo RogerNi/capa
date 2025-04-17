@@ -105,6 +105,9 @@ class JsonWithSize:
                     if addr_info.type == "absolute":
                         addr = addr_info.value
                         new_entries[-1][0][i]["size"] = self.size_book.get(("absolute", addr, scope), None)
+                    else:
+                        addr = addr_info.value
+                        new_entries[-1][0][i]["size"] = self.size_book.get(("file", addr, "string"), None)
             new_self_data[key] = new_entries
         self.data = new_self_data
         
