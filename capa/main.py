@@ -116,6 +116,8 @@ from capa.features.extractors.base_extractor import (
 
 from capa.features.sizebook import get_book
 from capa.features.stringmap import get_string_map
+from capa.render.json_with_size import get_json_with_size
+
 RULES_PATH_DEFAULT_STRING = "(embedded rules)"
 SIGNATURES_PATH_DEFAULT_STRING = "(embedded signatures)"
 BACKEND_AUTO = "auto"
@@ -993,6 +995,7 @@ def main(argv: Optional[list[str]] = None):
     parser.add_argument("-j", "--json", action="store_true", help="emit JSON instead of text")
     parser.add_argument("--write-size-to", type=str, help="write the size of the input file to a file")
     parser.add_argument("--write-str-map-to", type=str, help="write the string map to a file")
+    parser.add_argument("--write-match-with-size-to", type=str, help="write the match with size to a file")
     args = parser.parse_args(args=argv)
 
     try:
@@ -1070,6 +1073,12 @@ def main(argv: Optional[list[str]] = None):
     if args.write_str_map_to:
         logger.debug("Writing string map to %s", args.write_str_map_to)
         get_string_map().write_to(args.write_str_map_to)
+        
+    if args.write_match_with_size_to:
+        logger.debug("Writing match with size to %s", args.write_match_with_size_to)
+        get_json_with_size().load_size_and_string_map(args.write_size_to, args.write_str_map_to)
+        get_json_with_size().write_to(args.write_match_with_size_to)
+        
 
     logger.debug("done.")
 

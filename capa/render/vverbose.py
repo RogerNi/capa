@@ -31,6 +31,7 @@ import capa.features.freeze.features as frzf
 from capa.rules import RuleSet
 from capa.engine import MatchResults
 from capa.render.utils import Console
+from capa.render.json_with_size import get_json_with_size
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +181,7 @@ def render_statement(console: Console, layout: rd.Layout, match: rd.Match, state
         if statement.description:
             console.write(f" = {statement.description}")
         render_locations(console, layout, match.locations, indent)
+        get_json_with_size().add(match.locations, child.type, value)
         console.writeln()
 
     else:
@@ -255,6 +257,7 @@ def render_feature(
             pass
         else:
             render_locations(console, layout, match.locations, indent, use_short_format=True)
+            get_json_with_size().add(match.locations, key, value)
         console.writeln()
     else:
         # like:
@@ -272,6 +275,7 @@ def render_feature(
                 pass
             else:
                 render_locations(console, layout, locations, indent=indent + 1, use_short_format=True)
+                get_json_with_size().add(locations, key, value)
             console.writeln()
 
 
@@ -486,6 +490,7 @@ def render_rules(console: Console, doc: rd.ResultDocument):
                     assert rule.meta.scopes.static is not None
                     console.write(rule.meta.scopes.static.value + " @ ")
                     console.write(capa.render.verbose.format_address(location))
+                    get_json_with_size().change_scope(rule.meta.scopes.static.value, location)
 
                     if rule.meta.scopes.static == capa.rules.Scope.BASIC_BLOCK:
                         func = frz.Address.from_capa(functions_by_bb[location.to_capa()])
