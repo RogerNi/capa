@@ -416,7 +416,8 @@ def render_rules(console: Console, doc: rd.ResultDocument):
             capability = Text.assemble(rutils.bold(rule.meta.name), f"{lib_info}")
         else:
             if rule.meta.lib:
-                lib_info = ", only showing first match of library rule"
+                # lib_info = ", only showing first match of library rule"
+                pass
             capability = Text.assemble(rutils.bold(rule.meta.name), f" ({count} matches{lib_info})")
 
         console.writeln(capability)
@@ -521,7 +522,9 @@ def render_rules(console: Console, doc: rd.ResultDocument):
                 render_match(console, doc.meta.analysis.layout, rule, match, indent=1)
                 if rule.meta.lib:
                     # only show first match
-                    break
+                    # Do not break, show all matches
+                    # break
+                    pass
 
         console.writeln()
 
