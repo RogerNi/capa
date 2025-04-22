@@ -33,7 +33,7 @@ from capa.features.stringmap import set_text_base
 
 def extract_file_embedded_pe(buf, **kwargs) -> Iterator[tuple[Feature, Address]]:
     for offset, i in pe_carve.carve(buf, 1):
-        size = CarvedPE(buf, offset, chr(i)).getFileSize()
+        size = CarvedPE(buf, offset, bytes([i])).getFileSize()
         get_book().add(
             FileOffsetAddress(offset),
             "embedded_pe",

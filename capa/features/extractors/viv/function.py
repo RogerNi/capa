@@ -70,11 +70,13 @@ def extract_function_symtab_names(fh: FunctionHandle) -> Iterator[tuple[Feature,
 def extract_function_calls_to(fhandle: FunctionHandle) -> Iterator[tuple[Feature, Address]]:
     f: viv_utils.Function = fhandle.inner
     for src, _, _, _ in f.vw.getXrefsTo(f.va, rtype=vivisect.const.REF_CODE):
-        get_book().add(
-            AbsoluteVirtualAddress(src),
-            "function_calls_to",
-            fhandle.inner.vw.getLocation(src)[1]
-        )
+        loc = f.vw.getLocation(src)
+        if loc is not None:
+            get_book().add(
+                AbsoluteVirtualAddress(src),
+                "function_calls_to",
+                loc[1]
+            )
         yield Characteristic("calls to"), AbsoluteVirtualAddress(src)
 
 

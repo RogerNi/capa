@@ -8,7 +8,6 @@ class JsonWithSize:
     def __init__(self):
         self.data = defaultdict(list)
         self.all_features = set()
-        self.all_characteristics_desc = set()
         self.size_book = None
         self.string_map = None
         
@@ -20,12 +19,12 @@ class JsonWithSize:
             return
         self.data[self.scope].append((feature_offset, feature_name, feature_desc, self.decide_scope(feature_name, feature_desc)))
         self.all_features.add(feature_name)
-        if feature_name is "characteristic":
-            self.all_characteristics_desc.add(feature_desc)
         
     def decide_scope(self, feature_name, feature_desc):
         if feature_name in ["offset"]:
             return "instruction"
+        elif feature_name in ["basic block"]:
+            return "basic_block"
         elif feature_name in ["characteristic"]:
             if feature_desc in ["tight loop", "stack string"]:
                 return "basic_block"
@@ -108,6 +107,8 @@ class JsonWithSize:
                     else:
                         addr = addr_info.value
                         new_entries[-1][0][i]["size"] = self.size_book.get(("file", addr, "string"), None)
+                        if new_entries[-1][0][i]["size"] is None:
+                            new_entries[-1][0][i]["size"] = self.size_book.get(("file", addr, "embedded_pe"), None)
             new_self_data[key] = new_entries
         self.data = new_self_data
         
@@ -149,12 +150,17 @@ class JsonWithSize:
                 return [convert_keys_to_str(i) for i in obj]
             else:
                 return obj
+            
+        def safe_json_default(obj):
+            try:
+                return vars(obj)
+            except TypeError:
+                return str(obj)
 
         with open(file_path, "w") as jsonfile:
-            json.dump(convert_keys_to_str(self.data), jsonfile, indent=4, default=vars)
+            json.dump(convert_keys_to_str(self.data), jsonfile, indent=4, default=safe_json_default)
             
         print(f"All features: {self.all_features}")
-        print(f"All characteristics description: {self.all_characteristics_desc}")
             
     def __str__(self):
         output = []

@@ -477,14 +477,18 @@ def render_rules(console: Console, doc: rd.ResultDocument):
 
         if capa.rules.Scope.FILE in rule.meta.scopes:
             matches = doc.rules[rule.meta.name].matches
-            if len(matches) != 1:
-                # i think there should only ever be one match per file-scope rule,
-                # because we do the file-scope evaluation a single time.
-                # but i'm not 100% sure if this is/will always be true.
-                # so, lets be explicit about our assumptions and raise an exception if they fail.
-                raise RuntimeError(f"unexpected file scope match count: {len(matches)}")
-            _, first_match = matches[0]
-            render_match(console, doc.meta.analysis.layout, rule, first_match, indent=0)
+            # TODO: Ronghao: this is a temporary fix for multiple file scope matches
+            # TODO: An ideal solution is to report an issue to original capa but since
+            # TODO: our samples are private, we cannot share them
+            # if len(matches) != 1:
+            #     # i think there should only ever be one match per file-scope rule,
+            #     # because we do the file-scope evaluation a single time.
+            #     # but i'm not 100% sure if this is/will always be true.
+            #     # so, lets be explicit about our assumptions and raise an exception if they fail.
+            #     raise RuntimeError(f"unexpected file scope match count: {len(matches)}")
+            # _, first_match = matches[0]
+            for location, match in sorted(matches):
+                render_match(console, doc.meta.analysis.layout, rule, match, indent=0)
         else:
             for location, match in sorted(doc.rules[rule.meta.name].matches):
                 if doc.meta.flavor == rd.Flavor.STATIC:
