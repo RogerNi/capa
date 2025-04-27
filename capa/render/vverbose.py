@@ -488,6 +488,7 @@ def render_rules(console: Console, doc: rd.ResultDocument):
             #     raise RuntimeError(f"unexpected file scope match count: {len(matches)}")
             # _, first_match = matches[0]
             for location, match in sorted(matches):
+                get_json_with_size().change_scope(rule.meta.scopes.static.value, location)
                 render_match(console, doc.meta.analysis.layout, rule, match, indent=0)
         else:
             for location, match in sorted(doc.rules[rule.meta.name].matches):

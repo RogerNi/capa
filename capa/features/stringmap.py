@@ -47,4 +47,8 @@ def set_text_base(buf):
         _text_base = {}
         pe = pefile.PE(data=buf)
         for section in pe.sections:
-            _text_base[section.Name.rstrip(b"\x00").decode('utf-8')] = section.PointerToRawData
+            try:
+                _text_base[section.Name.rstrip(b"\x00").decode('utf-8')] = section.PointerToRawData
+            except UnicodeDecodeError:
+                # Handle the case where section name is not valid UTF-8
+                _text_base[section.Name] = section.PointerToRawData

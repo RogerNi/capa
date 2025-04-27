@@ -1,8 +1,9 @@
 from collections import defaultdict
 import json
 import csv
+import sys
 
-
+csv.field_size_limit(sys.maxsize)
 
 class JsonWithSize:
     def __init__(self):
