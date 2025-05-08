@@ -34,6 +34,21 @@ If you want to inspect or write capa rules, head on over to the [capa-rules repo
 
 Below you find a list of [our capa blog posts with more details.](#blog-posts)
 
+# Notes on the extension of capa
+
+The following features are planned (and some have been implemented) to be added to capa in the future:
+
+ - Support for `vivisect` extractors
+   - [x] Output the size of matched features
+   - [x] Distinguish between different scopes of features
+   - [x] Dereference string pointers
+     - [ ] (optional) Distinguish between full strings and matched substrings
+ - Support for `.Net` extractors (some binaries in the dataset are not native PE but `.NET`)
+   - [ ] Output the size of matched features
+   - [ ] Distinguish between different scopes of features
+   - [ ] Dereference string pointers
+     - [ ] (optional) Distinguish between full strings and matched substrings
+
 # example capa output
 ```
 $ capa.exe suspicious.exe
